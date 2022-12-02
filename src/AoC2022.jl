@@ -34,6 +34,17 @@ macro timesolve(day)
     end
 end
 
+"""
+    solve_all()::Vector{@NamedTuple result::Any, time::Float64, day::Int}
+
+Load and solve all puzzles, returning the results in a `Vector`.
+
+The vector contain `NamedTuples` with the following fields:
+    * `.result` is a Tuple{Any, Any} if and only if both parts of the day is
+      returned
+    * `.time` is the approximate elapsed time in seconds to solve the day's puzzle(s)
+    * `.day` is the day
+"""
 function solve_all()
     buffer = BufferType()
 
@@ -45,8 +56,13 @@ function solve_all()
     (time, sort!(buffer, by=i -> i.day))
 end
 
+"""
+    print_all()
+
+Load, solve, and print the solution to, and timing of, all puzzles to stdout.
+"""
 function print_all()
-    (time, buffer) = solve_all()
+    (total_time, buffer) = solve_all()
     io = IOBuffer()
     for (;result, time, day) in buffer
         # Some days I might only have solved part 1.
@@ -60,7 +76,7 @@ function print_all()
         isnothing(part2) || println(io, "\tPart 2: ", part2)
         println(io)
     end
-    print(io, "Total time: ", @sprintf("%.6f", time), " seconds")
+    print(io, "Total time: ", @sprintf("%.6f", total_time), " seconds")
     print(String(take!(io)))
 end
 

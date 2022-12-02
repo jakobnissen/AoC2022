@@ -6,54 +6,68 @@ using Downloads: Downloads
 using Dates: day, today # TODO: Remove this dep when December is over
 
 const DST_DIR = joinpath(dirname(@__DIR__), "data")
-const URL_BASE = "https://adventofcode.com/2022/day/"
 
-struct Session
-    hex::String
-
-    function Session(s::AbstractString)
-        str = lowercase(String(s))
-        if startswith(s, "session=")
-            str = s[9:end]
-        end
-        if !all(codeunits(str)) do byte
-                byte in UInt8('0'):UInt8('9') || byte in UInt8('a'):UInt8('f')
-            end
-            error(
-                "Session cookie must be 128 hex chars, ",
-                "optionally beginning with \"session=\""
-            )
-        end
-        new(str)
-    end
+function get_source(day::Int)
+    day in 1:25 || error()
+    "https://adventofcode.com/2022/day/" * string(day) * "/input"
 end
 
-header(s::Session) = Dict("cookie" => "session=$(s.hex)")
-load_session(path::AbstractString) = Session(strip(read(path, String)))
+struct Session
+    bytes::Vector{UInt8}
+end
 
-function download_data(days, session::Session)
+function Session(s::Union{String, SubString{String}})
+    Session(hex2bytes(chopprefix(s, "session=")))
+end
+
+load_session(path::AbstractString) = Session(strip(read(path, String)))
+header(s::Session) = Dict("cookie" => "session=$(bytes2hex(s.bytes))")
+
+function download_data(day_iter, session::Session)
+    days = sort!(collect(Set(Int(i)::Int for i in day_iter)))
+    all(in(1:25), days) || error("Can only pick days 1:25")
     mkpath(DST_DIR)
-    days = vec(collect(Int(i)::Int for i in days))
     headers = header(session)
     for day in days
-        day in 1:25 || error("Can only pick days 1:25")
         target = joinpath(DST_DIR, "day$(lpad(day, 2, '0')).txt")
         if isfile(target)
             println("Skipping existing file \"$target\"")
-            continue
         else
-            source = URL_BASE * string(day) * "/input"
-            Downloads.download(source, target; headers=headers)
+            Downloads.download(get_source(day), target; headers=headers)
             println("Downloaded file to \"$target\"")
         end
     end
 end
 
-function download_data(days, session_path::AbstractString)
-    download_data(days, load_session(session_path))
+"""
+    download_data(days, cookie_path::AbstractString)
+
+Download data for the given days, given a path to the session cookie.
+`days` must be an iterable of days to download.
+
+# Examples
+```julia
+julia> download_data(1:3, "cookie.txt")
+```
+"""
+function download_data(days, cookie_path::AbstractString)
+    download_data(days, load_session(cookie_path))
 end
 
 # TODO: Update to 25 when this December is over
-download_all(cookie::AbstractString) = download_data(1:day(today()), cookie)
+"""
+    download_all(cookie_path::AbstractString)
+
+Download data for all available days, given a path to the session cookie.
+
+See also: [`download_data`](@ref)
+
+# Examples
+```julia
+julia> download_all("cookie.txt")
+[...]
+```
+"""
+download_all(cookie_path::AbstractString) = download_data(1:day(today()), cookie_path)
 
 end # module

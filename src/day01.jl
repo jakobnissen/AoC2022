@@ -3,21 +3,11 @@ module Day1
 using ..TestItems
 
 function parse(io::IO)
-    result = UInt[]
-    current_sum = nothing
-    for line in eachline(io)
-        if isempty(line)
-            if !isnothing(current_sum)
-                push!(result, current_sum)
-                current_sum = nothing
-            end
-        else
-            num = Base.parse(UInt, line; base=10)
-            current_sum = isnothing(current_sum) ? num : current_sum + num
+    map(eachsplit(rstrip(read(io, String)), r"\r?\n\r?\n")) do chunk
+        sum(eachsplit(chunk, r"\r?\n"); init=UInt(0)) do line
+            Base.parse(UInt, line; base=10)
         end
     end
-    isnothing(current_sum) || push!(result, current_sum)
-    result
 end
 
 function solve(v::AbstractVector)
@@ -29,7 +19,7 @@ end
     using AoC2022.Day1: parse, solve
     using JET
 
-    INPUT = """1000
+    TEST_INPUT = """1000
     2000
     3000
     
@@ -43,7 +33,7 @@ end
     9000
     
     10000"""
-    v = parse(IOBuffer(INPUT))
+    v = parse(IOBuffer(TEST_INPUT))
     @test solve(v) == (24000, 45000)
     @test_opt solve(v)
     @test_call solve(v)

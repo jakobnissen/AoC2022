@@ -5,7 +5,7 @@ using ..TestItems
 @enum Choice::UInt8 rock paper scissors
 const WIN_SCORES = UInt8.((3, 6, 0, 0, 3, 6, 6, 0, 3))
 
-function parse(io::IO)
+function parse(io::IO)::Vector{NTuple{3, Choice}}
     map(Iterators.filter(!isempty, Iterators.map(rstrip, eachline(io)))) do line
         if ncodeunits(line) != 3 || codeunit(line, 2) != UInt8(' ')
             error("Invalid line in input")
@@ -18,7 +18,7 @@ function parse(io::IO)
     end
 end
 
-function round_score(other::Choice, you::Choice)
+function round_score(other::Choice, you::Choice)::Integer
     choice_score = Integer(you) + 0x01
     outcome_score = @inbounds WIN_SCORES[3*Integer(other) + Integer(you) + 0x01]
     choice_score + outcome_score
