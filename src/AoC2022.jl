@@ -3,6 +3,7 @@ module AoC2022
 using TestItems
 using Printf: @sprintf
 
+include("download.jl")
 include("day01.jl")
 include("day02.jl")
 
