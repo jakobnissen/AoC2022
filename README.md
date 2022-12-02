@@ -23,15 +23,26 @@ julia> using AoC2022
 
 * Download the data, using your cookie:
 ```julia
-julia> AoC2022.download_all("cookie.txt")
+julia> download_all("cookie.txt")
+```
+
+* Individual days can be downloaded with `download_data`:
+```julia
+julia> download_data(1:9, "cookie.txt")
 ```
 
 * You can compute and print results using `print_all()`:
 ```julia
-julia> AoC2022.print_all()
+julia> print_all()
 ```
 
 * Alternatively, you can compute the results without printing it using `solve_all`
 ```julia
-julia> AoC2022.solve_all()
+julia> solve_all()
+```
+
+* Individual days can be loaded and solve with the `@solve` macro:
+```julia
+julia> @solve 1
+(69528, 206152)
 ```
