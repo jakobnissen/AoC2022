@@ -1,9 +1,7 @@
 module Download
 
-export download_data
-
 import ..Downloads
-import ..day, ..today
+import ..Dates
 
 const DST_DIR = joinpath(dirname(@__DIR__), "data")
 
@@ -24,8 +22,8 @@ load_session(path::AbstractString) = Session(strip(read(path, String)))
 header(s::Session) = Dict("cookie" => "session=$(bytes2hex(s.bytes))")
 
 function download_data(day_iter, session::Session)
-    days = sort!(collect(Set(Int(i)::Int for i in day_iter)))
-    all(in(1:25), days) || error("Can only pick days 1:25")
+    days = unique!(sort!(vec(collect(Int, day_iter))))
+    all(in(1:25), days) || error("Can only pick days in 1:25")
     mkpath(DST_DIR)
     headers = header(session)
     for day in days
@@ -33,7 +31,7 @@ function download_data(day_iter, session::Session)
         if isfile(target)
             println("Skipping existing file \"$target\"")
         else
-            Downloads.download(get_source(day), target; headers=headers)
+            Downloads.download(get_source(day), target; headers=headers, timeout=10)
             println("Downloaded file to \"$target\"")
         end
     end
@@ -68,6 +66,6 @@ julia> download_all("cookie.txt")
 [...]
 ```
 """
-download_all(cookie_path::AbstractString) = download_data(1:day(today()), cookie_path)
+download_all(cookie_path::AbstractString) = download_data(1:Dates.day(Dates.today()), cookie_path)
 
 end # module

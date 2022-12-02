@@ -7,8 +7,8 @@ using Downloads: Downloads
 # When we reach the 25th of December, we can remove the Dates dependency used
 # in download.jl, which is only used to avoid downloading data which is not
 # yet released.
-using Dates: Dates, day, today
-@assert today() < Dates.Date(2022, 12, 25)
+using Dates: Dates
+@assert Dates.today() < Dates.Date(2022, 12, 25)
 
 include("download.jl")
 include("days/day01.jl")

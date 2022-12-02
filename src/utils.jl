@@ -30,7 +30,9 @@ macro solve(day)
     :(solve($(Symbol("Day$(day)")).solve, $(Symbol("Day$(day)")).parse, $day))
 end
 
-macro timesolve(day)
+# This is a macro so that the parser and solver function is resolved at parse time,
+# so it does not rely on reflection at runtime.
+macro push_day(day)
     quote
         (time, result) = @time @solve $day
         push!($(esc(:buffer)), (;result, time, day=$day))
@@ -40,9 +42,9 @@ end
 """
     solve_all()::Vector{@NamedTuple result::Any, time::Float64, day::Int}
 
-Load and solve all puzzles, returning the results in a `Vector`.
+Load and solve all puzzles, returning `(total_time::Float64, solutions)``\
 
-The vector contain `NamedTuples` with the following fields:
+`solutions` is a vector containing `NamedTuples` with the following fields:
     * `.result` is a Tuple{Any, Any} if and only if both parts of the day is
       returned
     * `.time` is the approximate elapsed time in seconds to solve the day's puzzle(s)
@@ -52,8 +54,8 @@ function solve_all()
     buffer = BufferType()
 
     (time, _) = @time begin
-        @timesolve 1
-        @timesolve 2
+        @push_day 1
+        @push_day 2
     end
 
     (time, sort!(buffer, by=i -> i.day))
@@ -64,8 +66,9 @@ end
 
 Load, solve, and print the solution to, and timing of, all puzzles to stdout.
 """
-function print_all()
-    (total_time, buffer) = solve_all()
+print_all() = print_solution(solve_all()...)
+
+function print_solution(total_time::Real, buffer::BufferType)
     io = IOBuffer()
     for (;result, time, day) in buffer
         # Some days I might only have solved part 1.
