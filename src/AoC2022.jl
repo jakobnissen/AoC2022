@@ -4,6 +4,7 @@ using TestItems
 using Printf: @sprintf
 
 include("day1.jl")
+include("day2.jl")
 
 const BufferType = Vector{NamedTuple{(:result, :time, :day), Tuple{Any, Float64, Int}}}
 
@@ -35,6 +36,7 @@ function solve_all()
 
     (time, _) = @time begin
         @timesolve 1
+        @timesolve 2
     end
 
     (time, sort!(buffer, by=i -> i.day))
