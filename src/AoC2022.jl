@@ -3,13 +3,15 @@ module AoC2022
 using TestItems
 using Printf: @sprintf
 
-include("day1.jl")
-include("day2.jl")
+include("day01.jl")
+include("day02.jl")
+
+using .Download: download_data, download_all
 
 const BufferType = Vector{NamedTuple{(:result, :time, :day), Tuple{Any, Float64, Int}}}
 
 function solve(solver, parser, day::Int)
-    open("data/day$(day).txt") do io
+    open("data/day$(lpad(day, 2, '0')).txt") do io
         solver(parser(io))
     end
 end
@@ -46,6 +48,7 @@ function print_all()
     (time, buffer) = solve_all()
     io = IOBuffer()
     for (;result, time, day) in buffer
+        # Some days I might only have solved part 1.
         (part1, part2) = if result isa Tuple{Any, Any}
             result
         else
