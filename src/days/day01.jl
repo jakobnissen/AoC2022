@@ -1,6 +1,6 @@
 module Day1
 
-using ..TestItems
+import ..@testitem
 
 function parse(io::IO)
     map(eachsplit(rstrip(read(io, String)), r"\r?\n\r?\n")) do chunk

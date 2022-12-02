@@ -1,9 +1,10 @@
 module Day2
 
-using ..TestItems
+import ..@testitem
+
+const WIN_SCORES = UInt8.((3, 6, 0, 0, 3, 6, 6, 0, 3))
 
 @enum Choice::UInt8 rock paper scissors
-const WIN_SCORES = UInt8.((3, 6, 0, 0, 3, 6, 6, 0, 3))
 
 function parse(io::IO)::Vector{NTuple{3, Choice}}
     map(Iterators.filter(!isempty, Iterators.map(rstrip, eachline(io)))) do line

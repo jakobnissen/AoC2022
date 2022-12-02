@@ -2,8 +2,8 @@ module Download
 
 export download_data
 
-using Downloads: Downloads
-using Dates: day, today # TODO: Remove this dep when December is over
+import ..Downloads
+import ..day, ..today
 
 const DST_DIR = joinpath(dirname(@__DIR__), "data")
 
