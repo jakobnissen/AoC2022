@@ -13,6 +13,7 @@ using Dates: Dates
 include("download.jl")
 include("days/day01.jl")
 include("days/day02.jl")
+include("days/day03.jl")
 include("utils.jl")
 
 import .Download: download_data, download_all

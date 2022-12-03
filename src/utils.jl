@@ -56,6 +56,7 @@ function solve_all()
     (time, _) = @time begin
         @push_day 1
         @push_day 2
+        @push_day 3
     end
 
     (time, sort!(buffer, by=i -> i.day))
