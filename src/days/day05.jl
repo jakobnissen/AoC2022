@@ -78,7 +78,7 @@ function solve(
     moves::Vector{<:NTuple{3, Integer}}
 )
     # Copy vector for part2 to avoid mutating same arrays for both parts
-    copied = Dict(k => (v, copy(v)) for (k, v) in tower)
+    copied = Dict(k => (copy(v), copy(v)) for (k, v) in tower)
     for (n, from, to) in moves
         append_pop!(first(copied[to]), first(copied[from]), n)
         # For part 1, they are moved one at a time, which reverses the moved
@@ -114,11 +114,10 @@ end
     move 2 from 2 to 1
     move 1 from 1 to 2"""
 
-    (tower, moves) = parse(IOBuffer(TEST_INPUT))
-    @test solve(deepcopy(tower), moves) == ("CMZ", "MCD")
-
-    @test_opt solve(deepcopy(tower), moves)
-    @test_call solve(deepcopy(tower), moves)
+    data = parse(IOBuffer(TEST_INPUT))
+    @test solve(data) == ("CMZ", "MCD")
+    @test_opt solve(data)
+    @test_call solve(data)
 end
 
 end # module
