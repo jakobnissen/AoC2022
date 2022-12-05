@@ -1,4 +1,6 @@
 /data
-/Manifest.toml
+Manifest.toml
 /TODO.md
 /cookie
+.vscode
+docs/build

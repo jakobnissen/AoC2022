@@ -1,0 +1,6 @@
+[deps]
+AoC2022 = "d369df38-0301-4d71-9c01-a1cc4e4d3102"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+
+[compat]
+Documenter = "0.27"
