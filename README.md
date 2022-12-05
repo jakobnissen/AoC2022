@@ -1,5 +1,7 @@
 # Advent of Code, 2022 in Julia
 
+[![Codecov](https://codecov.io/gh/jakobnissen/AoC2022/branch/master/graph/badge.svg)](https://codecov.io/gh/jakobnissen/AoC2022)
+
 ## Principles
 * Input is read from files, not hardcoded into the solution.
 * Parsing and solving should be separate steps for each day.
