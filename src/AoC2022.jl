@@ -15,6 +15,7 @@ include("days/day01.jl")
 include("days/day02.jl")
 include("days/day03.jl")
 include("days/day04.jl")
+include("days/day05.jl")
 include("utils.jl")
 
 import .Download: download_data, download_all
