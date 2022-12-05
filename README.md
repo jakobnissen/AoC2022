@@ -1,5 +1,6 @@
 # Advent of Code, 2022 in Julia
 
+[![Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://jakobnissen.github.io/AoC2022/dev)
 [![Codecov](https://codecov.io/gh/jakobnissen/AoC2022/branch/master/graph/badge.svg)](https://codecov.io/gh/jakobnissen/AoC2022)
 
 ## Principles
