@@ -34,13 +34,13 @@ function solve(v::AbstractVector{Tuple{Choice, Choice, Choice}})
     (score_p1, score_p2)
 end
 
+const TEST_INPUT = """A Y
+B X
+C Z"""
+
 @testitem "Day2" begin
-    using AoC2022.Day2: parse, solve
+    using AoC2022.Day2: parse, solve, TEST_INPUT
     using JET
-    
-    TEST_INPUT = """A Y
-    B X
-    C Z"""
 
     v = parse(IOBuffer(TEST_INPUT))
     @test solve(v) == (15, 12)

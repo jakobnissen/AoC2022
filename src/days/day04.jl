@@ -39,16 +39,16 @@ function encompasses(a::AbstractUnitRange{T}, b::AbstractUnitRange{T}) where T
     first(a) <= first(b) && last(a) >= last(b)
 end
 
-@testitem "Day4" begin
-    using AoC2022.Day4: parse, solve
-    using JET
+const TEST_INPUT = """2-4,6-8
+2-3,4-5
+5-7,7-9
+2-8,3-7
+6-6,4-6
+2-6,4-8"""
 
-    TEST_INPUT = """2-4,6-8
-    2-3,4-5
-    5-7,7-9
-    2-8,3-7
-    6-6,4-6
-    2-6,4-8"""
+@testitem "Day4" begin
+    using AoC2022.Day4: parse, solve, TEST_INPUT
+    using JET
 
     v = parse(IOBuffer(TEST_INPUT))
     @test solve(v) == (2, 4)

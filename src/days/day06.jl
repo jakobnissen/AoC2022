@@ -35,8 +35,10 @@ function solve(v::Letters, buffer::Vector{UInt32}, n::Int)
     nothing
 end
 
+const TEST_INPUT = "mjqjpqmgbljsphdztnvjfqwrcgsmlb"
+
 @testitem "Day6" begin
-    using AoC2022.Day6: solve, parse
+    using AoC2022.Day6: solve, parse, TEST_INPUT
     using JET
 
     TEST_STRINGS = [

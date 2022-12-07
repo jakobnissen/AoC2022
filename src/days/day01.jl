@@ -15,24 +15,25 @@ function solve(v::AbstractVector)
     (Int(first(v)), Int(sum(view(v, 1:3))))
 end
 
+const TEST_INPUT = """1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000"""
+
 @testitem "Day1" begin
-    using AoC2022.Day1: parse, solve
+    using AoC2022.Day1: parse, solve, TEST_INPUT
     using JET
 
-    TEST_INPUT = """1000
-    2000
-    3000
-    
-    4000
-    
-    5000
-    6000
-    
-    7000
-    8000
-    9000
-    
-    10000"""
     v = parse(IOBuffer(TEST_INPUT))
     @test solve(v) == (24000, 45000)
     @test_opt solve(v)

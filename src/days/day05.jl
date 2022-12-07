@@ -100,19 +100,19 @@ function append_pop!(to::Vector{T}, from::Vector{T}, n::Integer) where T
     to
 end
 
+const TEST_INPUT = """    [D]    
+[N] [C]    
+[Z] [M] [P]
+    1   2   3 
+
+move 1 from 2 to 1
+move 3 from 1 to 3
+move 2 from 2 to 1
+move 1 from 1 to 2"""
+
 @testitem "Day5" begin
-    using AoC2022.Day5: solve, parse
+    using AoC2022.Day5: solve, parse, TEST_INPUT
     using JET
-
-    TEST_INPUT = """    [D]    
-    [N] [C]    
-    [Z] [M] [P]
-        1   2   3 
-
-    move 1 from 2 to 1
-    move 3 from 1 to 3
-    move 2 from 2 to 1
-    move 1 from 1 to 2"""
 
     data = parse(IOBuffer(TEST_INPUT))
     @test solve(data) == ("CMZ", "MCD")

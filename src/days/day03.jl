@@ -55,16 +55,16 @@ end
 
 score(n::Integer) = n > Int('Z') ? n - Int('a') + 1 : n - Int('A') + 27
 
-@testitem "Day3" begin
-    using AoC2022.Day3: solve, parse
-    using JET
+const TEST_INPUT = """vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw"""
 
-    TEST_INPUT = """vJrwpWtwJgWrhcsFMMfFFhFp
-    jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-    PmmdzqPrVvPwwTWBwg
-    wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-    ttgJtRGJQctTZtZT
-    CrZsJsPPZsGzwwsLwLmpwMDw"""
+@testitem "Day3" begin
+    using AoC2022.Day3: solve, parse, TEST_INPUT
+    using JET
 
     v = parse(IOBuffer(TEST_INPUT))
     @test solve(v) == (157, 70)

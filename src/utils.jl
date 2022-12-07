@@ -30,6 +30,10 @@ macro solve(day)
     :(solve($(Symbol("Day$(day)")).solve, $(Symbol("Day$(day)")).parse, $day))
 end
 
+macro solve_test(day)
+    :($(Symbol("Day$(day)")).solve($(Symbol("Day$(day)")).parse(IOBuffer($(Symbol("Day$(day)")).TEST_INPUT))))
+end
+
 # This is a macro so that the parser and solver function is resolved at parse time,
 # so it does not rely on reflection at runtime.
 macro push_day(day)
