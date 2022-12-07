@@ -36,7 +36,7 @@ get_sizes(d::Directory) = (c = IdDict{Directory, Int}(); _size(d, c); c)
 function _size(d::Directory, cache)::Int
     existing = get(cache, d, nothing)
     existing === nothing || return existing
-    s = d.total_filesize + mapreduce(i -> _size(i,cache), +, d.subdirs; init=d.total_filesize)
+    s = mapreduce(i -> _size(i,cache), +, d.subdirs; init=d.total_filesize)
     cache[d] = s
     s
 end
