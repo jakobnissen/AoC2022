@@ -18,7 +18,7 @@ parse(io::IO) = Letters(strip(read(io, String)))
 
 function solve(v::Letters)
     buffer = Vector{UInt32}(undef, 26)
-    solve(v, buffer, 4), solve(v, buffer, 14)
+    (solve(v, buffer, 4)::Integer, solve(v, buffer, 14)::Integer)
 end
 
 function solve(v::Letters, buffer::Vector{UInt32}, n::Int)
@@ -28,11 +28,8 @@ function solve(v::Letters, buffer::Vector{UInt32}, n::Int)
         remaining -= 1
         byte_index = byte - UInt8('a') + 0x01
         last_seen = buffer[byte_index]
-        if last_seen > pos - n
-            remaining = max(remaining, last_seen + n - pos)
-        elseif iszero(remaining)
-            return pos
-        end
+        remaining = max(remaining, last_seen + n - pos)
+        iszero(remaining) && return pos
         buffer[byte_index] = pos % UInt32
     end
     nothing
