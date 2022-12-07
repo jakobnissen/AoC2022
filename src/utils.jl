@@ -34,42 +34,35 @@ macro solve_test(day)
     :($(Symbol("Day$(day)")).solve($(Symbol("Day$(day)")).parse(IOBuffer($(Symbol("Day$(day)")).TEST_INPUT))))
 end
 
-# This is a macro so that the parser and solver function is resolved at parse time,
-# so it does not rely on reflection at runtime.
-macro push_day(day)
-    quote
-        (time, result) = @time @solve $day
-        push!($(esc(:buffer)), (;result, time, day=$day))
-    end     
-end
-
-"""
-    solve_all()::Vector{@NamedTuple result::Any, time::Float64, day::Int}
-
-Load and solve all puzzles, returning `(total_time::Float64, solutions)``\
-
-`solutions` is a vector containing `NamedTuples` with the following fields:
-    * `.result` is a Tuple{Any, Any} if and only if both parts of the day is
-      returned
-    * `.time` is the approximate elapsed time in seconds to solve the day's puzzle(s)
-    * `.day` is the day
-"""
-function solve_all()
-    buffer = BufferType()
-
-    (time, _) = @time begin
-        @push_day 1
-        @push_day 2
-        @push_day 3
-        @push_day 4
-        @push_day 5
-        @push_day 6
-        @push_day 7
+let
+    args = Any[
+        quote
+            let
+                (time, result) = @time @solve $day
+                push!(buffer, (;result, time, day=$day))
+            end
+        end
+        for day in SOLVED_DAYS
+    ]
+    block = Expr(:block, args...)
+    """
+        solve_all()::Vector{@NamedTuple result::Any, time::Float64, day::Int}
+    
+    Load and solve all puzzles, returning `(total_time::Float64, solutions)``\
+    
+    `solutions` is a vector containing `NamedTuples` with the following fields:
+        * `.result` is a Tuple{Any, Any} if and only if both parts of the day is
+          returned
+        * `.time` is the approximate elapsed time in seconds to solve the day's puzzle(s)
+        * `.day` is the day
+    """
+    @eval function solve_all()
+        buffer = BufferType()
+        # This expands to `@push_day 1` etc for all solved days
+        (time, _) = @time $block
+        (time, sort!(buffer, by=i -> i.day))
     end
-
-    (time, sort!(buffer, by=i -> i.day))
 end
-
 """
     print_all()
 
