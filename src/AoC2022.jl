@@ -10,6 +10,8 @@ using Downloads: Downloads
 using Dates: Dates
 @assert Dates.today() < Dates.Date(2022, 12, 25)
 
+const DATA_DIR = joinpath(dirname(@__DIR__), "data")
+
 include("download.jl")
 include("days/day01.jl")
 include("days/day02.jl")

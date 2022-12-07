@@ -1,7 +1,7 @@
 const BufferType = Vector{NamedTuple{(:result, :time, :day), Tuple{Any, Float64, Int}}}
 
 function solve(solver, parser, day::Int)
-    open("data/day$(lpad(day, 2, '0')).txt") do io
+    open(joinpath(DATA_DIR, "day$(lpad(day, 2, '0')).txt")) do io
         solver(parser(io))
     end
 end

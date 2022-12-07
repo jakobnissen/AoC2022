@@ -2,8 +2,7 @@ module Download
 
 import ..Downloads
 import ..Dates
-
-const DST_DIR = joinpath(dirname(@__DIR__), "data")
+import ..DATA_DIR
 
 function get_source(day::Int)
     day in 1:25 || error()
@@ -24,10 +23,10 @@ header(s::Session) = Dict("cookie" => "session=$(bytes2hex(s.bytes))")
 function download_data(day_iter, session::Session)
     days = unique!(sort!(vec(collect(Int, day_iter))))
     all(in(1:25), days) || error("Can only pick days in 1:25")
-    mkpath(DST_DIR)
+    mkpath(DATA_DIR)
     headers = header(session)
     for day in days
-        target = joinpath(DST_DIR, "day$(lpad(day, 2, '0')).txt")
+        target = joinpath(DATA_DIR, "day$(lpad(day, 2, '0')).txt")
         if isfile(target)
             println("Skipping existing file \"$target\"")
         else
