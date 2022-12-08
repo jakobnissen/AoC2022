@@ -5,36 +5,37 @@ import ..@testitem
 function parse(io::IO)::Matrix{Int8}
     lines = Iterators.map(rstrip, eachline(io))
     width = 0
-    buffer = Int8[]
+    buffer = sizehint!(Int8[], 10000)
     for nonempty_line in Iterators.takewhile(!isempty, lines)
         if iszero(width)
             width = ncodeunits(nonempty_line)
         elseif ncodeunits(nonempty_line) != width
             error("Not all lines have uniform width")
         end
-        for codeunit in codeunits(nonempty_line)
-            codeunit in UInt8('0'):UInt8('9') || error("Input must contain only 0:9")
-            push!(buffer, (codeunit - 0x30) % Int8)
+        for byte in codeunits(nonempty_line)
+            byte in UInt8('0'):UInt8('9') || error("Input must contain only 0:9")
+            push!(buffer, (byte - 0x30) % eltype(buffer))
         end
     end
     isempty(buffer) && error("Empty file, or leading blank lines")
-    return Matrix(reshape(buffer, :, width)')
+    isempty(Iterators.filter(!isempty, lines)) || error("Nonblank lines after blank lines")
+    return permutedims(reshape(buffer, :, width))
 end
 
-# From each of four directions, takes views of matrix and accumulator.
-# v = f(view of matrix) is computed, then accumulator is updated with
-# op!(view of accumulator, v)
-function directional_mapreduce!(f::Function, op!::Function, matrix::AbstractMatrix, accumulator::AbstractMatrix)
-    size(accumulator) == size(matrix) || error("Sizes must match")
-    (nrows, ncols) = size(matrix)
-    @inbounds for row in 1:nrows
-        op!(@view(accumulator[row, :]), f(@view(matrix[row, :])))
-        op!(@view(accumulator[row, ncols:-1:1]), f(@view(matrix[row, ncols:-1:1])))
+function directional_mapreduce!(f, op!, mats, accs)
+    for (acc, mat) in zip(accs, mats)
+        op!(acc, f(mat))
     end
-    @inbounds for col in 1:ncols
-        op!(@view(accumulator[:, col]), f(@view(matrix[:, col])))
-        op!(@view(accumulator[nrows:-1:1, col]), f(@view(matrix[ncols:-1:1, col])))
-    end
+end
+
+function bidirectional_mapreduce!(f, op!, matrix, accumulator)
+    directional_mapreduce!(f, op!, eachcol(matrix), eachcol(accumulator))
+    directional_mapreduce!(f, op!, eachrow(matrix), eachrow(accumulator))
+end
+
+function quaddirectional_mapreduce!(f, op!, matrix, accumulator)
+    bidirectional_mapreduce!(f, op!, matrix, accumulator)
+    bidirectional_mapreduce!(f, op!, reverse!(matrix), reverse!(accumulator))
     accumulator
 end
 
@@ -56,7 +57,7 @@ function part1(m::AbstractMatrix{<:Integer})
     buffer = BitVector(undef, max(size(m)...))
     f = i -> is_visible!(buffer, i)
     op!(a, b) = a .|= b
-    sum(directional_mapreduce!(f, op!, m, accumulator))
+    sum(quaddirectional_mapreduce!(f, op!, m, accumulator))
 end
 
 function get_visibility!(
@@ -68,19 +69,19 @@ function get_visibility!(
     viewbuffer[1] = 0
     @inbounds for i in 2:lastindex(trees)
         height = trees[i]
-        viewbuffer[i] = i - seenbuffer[height+1]
-        @view(seenbuffer[1:height+1]) .= i
+        viewbuffer[i] = (i - seenbuffer[height+1]) % eltype(viewbuffer)
+        @view(seenbuffer[1:height+1]) .= (i % eltype(seenbuffer))
     end
     view(viewbuffer, eachindex(trees))
 end
 
 function part2(m::AbstractMatrix{<:Integer})
-    accumulator = fill(Int32(1), size(m))
-    seenbuffer = Vector{UInt8}(undef, 10)
-    viewbuffer = Vector{Int32}(undef, max(size(m)...))
+    accumulator = fill(UInt(1), size(m))
+    seenbuffer = Vector{UInt32}(undef, 10)
+    viewbuffer = Vector{UInt32}(undef, max(size(m)...))
     f = i -> get_visibility!(seenbuffer, viewbuffer, i)
     op!(a, b) = a .*= b
-    maximum(directional_mapreduce!(f, op!, m, accumulator))
+    Int(maximum(quaddirectional_mapreduce!(f, op!, m, accumulator)))
 end
 
 function solve(m::AbstractMatrix{<:Integer})
