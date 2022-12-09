@@ -19,7 +19,8 @@ end
 function parse(io::IO)
     lines = Iterators.map(rstrip, eachline(io))
     result = Tuple{Direction, UInt}[]
-    for line in lines
+    local line
+    for outer line in lines
         if isempty(line)
             all(isempty, lines) || error("Blank line in input")
         end
@@ -42,7 +43,7 @@ function parse(io::IO)
     end
     return result
     @label malformed
-    error("Malformed line")
+    error(lazy"Malformed line: \"$line\"")
 end
 
 function follow_pos(head, tail)
@@ -101,11 +102,12 @@ L 25
 U 20"""
 
 @testitem "Day9" begin
-    using AoC2022.Day9: solve, parse, TEST_INPUT
+    using AoC2022.Day9: solve, parse, TEST_INPUT, TEST_INPUT2
     using JET
 
     v = parse(IOBuffer(TEST_INPUT))
     @test solve(v) == (13, 1)
+    @test solve(parse(IOBuffer(TEST_INPUT2))) == (88, 36)
     @test_opt solve(v)
     @test_call solve(v)
 end
