@@ -99,10 +99,10 @@ const TEST_INPUT = """30373
     using AoC2022.Day8: solve, parse, TEST_INPUT
     using JET
 
-    root = parse(IOBuffer(TEST_INPUT))
-    @test solve(root) == (21, 8)
-    @test_opt solve(root)
-    @test_call solve(root)
+    matrix = parse(IOBuffer(TEST_INPUT))
+    @test solve(matrix) == (21, 8)
+    @test_opt solve(matrix)
+    @test_call solve(matrix)
 end
 
 end
