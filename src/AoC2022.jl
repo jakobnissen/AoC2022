@@ -11,7 +11,7 @@ using SnoopPrecompile: @precompile_all_calls
 using Dates: Dates
 @assert Dates.today() < Dates.Date(2022, 12, 25)
 
-const SOLVED_DAYS = 1:10
+const SOLVED_DAYS = 1:11
 const DATA_DIR = joinpath(dirname(@__DIR__), "data")
 
 include("download.jl")
