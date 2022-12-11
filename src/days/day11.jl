@@ -2,11 +2,6 @@ module Day11
 
 import ..@testitem
 
-struct Item
-    monkey_index::Int
-    worry_level::Int
-end
-
 const Inv = Base.MultiplicativeInverses.SignedMultiplicativeInverse{Int}
 
 @enum OpCode add mul exp
@@ -27,10 +22,20 @@ function (x::Operation)(y)
     end
 end
 
-struct Monkey
-    operation::Operation
-    divisor::Inv
-    targets::Tuple{Int, Int}
+mutable struct Monkey
+    const items::Vector{Int}
+    const operation::Operation
+    const divisor::Inv
+    const targets::Tuple{Int, Int}
+    len::Int
+    interactions::Int
+end
+
+function reset!(m::Monkey, items::Vector{Int})
+    copyto!(m.items, items)
+    m.len = length(items)
+    m.interactions = 0
+    m
 end
 
 function parse(::Type{Monkey}, chunk::AbstractString, expected_index::Int)
@@ -55,18 +60,18 @@ function parse(::Type{Monkey}, chunk::AbstractString, expected_index::Int)
     target_2 = Base.parse(Int, m.captures[1]; base=10) + 1
     m = match(r"^If false: throw to monkey (\d+)$", lines[6])
     target_1 = Base.parse(Int, m.captures[1]; base=10) + 1
-    (Monkey(operation, Inv(divisor), (target_1, target_2)), items)
+    Monkey(items, operation, Inv(divisor), (target_1, target_2), length(items), 0)
 end
 
 function parse(io::IO)
-    items = Item[]
-    monkeys = Monkey[]
-    chunks = split(strip(read(io, String)), r"\r?\n(\r?\n)+")
-    for (i, chunk) in enumerate(chunks)
-        monkey, things = parse(Monkey, chunk, i-1)
-        push!(monkeys, monkey)
-        append!(items, (Item(i, thing) for thing in things))
+    monkeys = map(enumerate(split(strip(read(io, String)), r"\r?\n(\r?\n)+"))) do (i, chunk)
+        parse(Monkey, chunk, i-1)
     end
+    n_items = sum(i -> i.len, monkeys; init=0)
+    for monkey in monkeys
+        resize!(monkey.items, n_items)
+    end
+    length(monkeys) < 2 && error("Monkey business takes two monkeys or more")
     if any(enumerate(monkeys)) do (i, monkey)
             !all(monkey.targets) do target
                 in(target, eachindex(monkeys)) &&
@@ -75,51 +80,53 @@ function parse(io::IO)
         end
         error("Invalid monkey")
     end
-    (monkeys, items)
+    monkeys
 end
 
-function process!(monkey::Monkey, index::Int, items::Vector{Item}, modulo::Union{Nothing, Inv})
-    inspected = 0
-    @inbounds for (i, item) in enumerate(items)
-        item.monkey_index == index || continue
-        inspected += 1
-        worry_level = monkey.operation(item.worry_level)
+function process!(monkey::Monkey, monkeys::Vector{Monkey}, modulo::Union{Nothing, Inv})
+    @inbounds for i in 1:monkey.len
+        worry_level = monkey.operation(monkey.items[i])
         worry_level = if modulo === nothing
             div(worry_level, 3)
         else
             worry_level % modulo
         end 
-        target = monkey.targets[iszero(worry_level % monkey.divisor) + 1]
-        items[i] = Item(target, worry_level)
+        target = monkeys[monkey.targets[iszero(worry_level % monkey.divisor) + 1]]
+        len = target.len
+        target.items[len + 1] = worry_level
+        target.len = len + 1
     end
-    inspected
+    monkey.interactions += monkey.len
+    monkey.len = 0
 end
 
 function part(
     monkeys::Vector{Monkey},
-    items::Vector{Item},
-    inspections::Vector{<:Integer},
     rounds::Int,
-    modulo::Union{Nothing, Inv}
+    modulo::Union{Nothing, Inv},
+    copies::Vector{Vector{Int}}
 )
-    fill!(inspections, 0)
-    item_copy = copy(items)
-    for i in 1:rounds
-        for i in eachindex(monkeys, inspections)
-            inspections[i] += process!(monkeys[i], i, item_copy, modulo)
+    for _ in 1:rounds
+        for i in eachindex(monkeys)
+            process!(monkeys[i], monkeys, modulo)
         end
     end
+    inspections = [m.interactions for m in monkeys]
     partialsort!(inspections, 1:2; rev=true)
-    inspections[1] * inspections[2]
+    result = inspections[1] * inspections[2]
+
+    for (monkey, items) in zip(monkeys, copies)
+        reset!(monkey, items)
+    end
+    result
 end
 
-solve(v::Tuple{Vector{Monkey}, Vector{Item}}) = solve(v...)
-function solve(monkeys::Vector{Monkey}, items::Vector{Item})
-    inspections = Vector{Int}(undef, length(monkeys))
+function solve(monkeys::Vector{Monkey})
+    copies = map(i -> i.items[1:i.len], monkeys)
     modulo = Inv(prod(i -> i.divisor.divisor, monkeys))
     (
-        part(monkeys, items, inspections, 20, nothing),
-        part(monkeys, items, inspections, 10000, modulo)
+        part(monkeys, 20, nothing, copies),
+        part(monkeys, 10000, modulo, copies)
     )
 end
 
