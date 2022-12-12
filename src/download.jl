@@ -65,6 +65,10 @@ julia> download_all("cookie.txt")
 [...]
 ```
 """
-download_all(cookie_path::AbstractString) = download_data(1:Dates.day(Dates.today()), cookie_path)
+function download_all(cookie_path::AbstractString)
+    today = Dates.today()
+    last_day = today < Dates.Date(2022, 12, 25) ? Dates.day(today) : 25
+    download_data(1:last_day, cookie_path)
+end
 
 end # module

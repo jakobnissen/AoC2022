@@ -9,7 +9,6 @@ using SnoopPrecompile: @precompile_all_calls
 # in download.jl, which is only used to avoid downloading data which is not
 # yet released.
 using Dates: Dates
-@assert Dates.today() < Dates.Date(2022, 12, 25)
 
 const SOLVED_DAYS = 1:12
 const DATA_DIR = joinpath(dirname(@__DIR__), "data")
@@ -22,7 +21,7 @@ include("utils.jl")
 import .Download: download_data, download_all
 
 # This expands to @precompile begin @solve_test 1 solve_test 2 ...
-eval(:(@precompile_all_calls $(Expr(:block, [:(@solve_test $i) for i in SOLVED_DAYS]...))))
+# eval(:(@precompile_all_calls $(Expr(:block, [:(@solve_test $i) for i in SOLVED_DAYS]...))))
 
 export @solve, print_all, solve_all, download_all, download_data
 
