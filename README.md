@@ -49,3 +49,13 @@ julia> solve_all()
 julia> @solve 1
 (69528, 206152)
 ```
+
+* To benchmark these solutions, you might want to load the data into memory and parse it from there.
+  This will reduce the noise from disk access (but will not accurately reflect the time spent reading files from disk):
+```julia
+julia> using BenchmarkTools # package for benchmarking
+
+julia> data = load_all();
+
+julia> @benchmark solve_all(data)
+```

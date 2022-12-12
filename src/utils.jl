@@ -1,17 +1,15 @@
 const BufferType = Vector{NamedTuple{(:result, :time, :day), Tuple{Any, Float64, Int}}}
 
-function solve(solver, parser, day::Int)
-    open(joinpath(DATA_DIR, "day$(lpad(day, 2, '0')).txt")) do io
-        solver(parser(io))
-    end
-end
-
 macro time(ex)
     quote
         t1 = time_ns()
         val = $(esc(ex))
         ((time_ns() - t1) / 1e9, val)
     end
+end
+
+macro solve(io, day)
+    :($(Symbol("Day$(day)")).solve($(Symbol("Day$(day)")).parse($(esc(io)))))
 end
 
 """
@@ -27,11 +25,11 @@ julia> @solve 1
 ```
 """
 macro solve(day)
-    :(solve($(Symbol("Day$(day)")).solve, $(Symbol("Day$(day)")).parse, $day))
-end
-
-macro solve_test(day)
-    :($(Symbol("Day$(day)")).solve($(Symbol("Day$(day)")).parse(IOBuffer($(Symbol("Day$(day)")).TEST_INPUT))))
+    quote
+        open(joinpath(DATA_DIR, $("day" * lpad(day, 2, '0') * ".txt"))) do io
+            @solve io $day
+        end
+    end
 end
 
 let
@@ -44,31 +42,63 @@ let
         end
         for day in SOLVED_DAYS
     ]
-    block = Expr(:block, args...)
-    """
-        solve_all()::Vector{@NamedTuple result::Any, time::Float64, day::Int}
-    
-    Load and solve all puzzles, returning `(total_time::Float64, solutions)``\
-    
-    `solutions` is a vector containing `NamedTuples` with the following fields:
-        * `.result` is a Tuple{Any, Any} if and only if both parts of the day is
-          returned
-        * `.time` is the approximate elapsed time in seconds to solve the day's puzzle(s)
-        * `.day` is the day
-    """
+    solve_all_block = Expr(:block, args...)
+
     @eval function solve_all()
         buffer = BufferType()
         # This expands to `@push_day 1` etc for all solved days
-        (time, _) = @time $block
+        (time, _) = @time $solve_all_block
+        (time, sort!(buffer, by=i -> i.day))
+    end
+
+    @doc """
+    solve_all([input])::Vector{@NamedTuple result::Any, time::Float64, day::Int}
+
+Load and solve all puzzles, returning `(total_time::Float64, solutions)`.
+If `input` is passed, it must be the output of `load_all`. This allows `solve_all`
+to work from data in memory.
+If not passed, `solve_all` will read the data from disk.
+
+`solutions` is a vector containing `NamedTuples` with the following fields:
+    * `.result` is a Tuple{Any, Any} if and only if both parts of the day is
+      returned
+    * `.time` is the approximate elapsed time in seconds to solve the day's puzzle(s)
+    * `.day` is the day
+"""
+    solve_all
+
+    args = Any[
+        quote
+            let
+                io = IOBuffer(data[$day])
+                (time, result) = @time @solve io $day
+                push!(buffer, (;result, time, day=$day))
+            end
+        end
+        for day in SOLVED_DAYS
+    ]
+    solve_all_block = Expr(:block, args...)
+
+    @eval function solve_all(data::Vector{Vector{UInt8}})
+        buffer = BufferType()
+        # This expands to `@push_day 1` etc for all solved days
+        (time, _) = @time $solve_all_block
         (time, sort!(buffer, by=i -> i.day))
     end
 end
+
+function load_all()
+    map(SOLVED_DAYS) do day
+        open(read, joinpath(DATA_DIR, "day$(lpad(day, 2, '0')).txt"))
+    end
+end
+
 """
     print_all()
 
 Load, solve, and print the solution to, and timing of, all puzzles to stdout.
 """
-print_all() = print_solution(solve_all()...)
+print_all(args...) = print_solution(solve_all(args...)...)
 
 function print_solution(total_time::Real, buffer::BufferType)
     io = IOBuffer()

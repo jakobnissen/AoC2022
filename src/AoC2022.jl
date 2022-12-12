@@ -20,9 +20,15 @@ include("utils.jl")
 
 import .Download: download_data, download_all
 
-# This expands to @precompile begin @solve_test 1 solve_test 2 ...
-# eval(:(@precompile_all_calls $(Expr(:block, [:(@solve_test $i) for i in SOLVED_DAYS]...))))
+let
+    # This block expands to precompilation statement for all implemented days.
+    # This increases precompilation time but reduces JIT time.
+    # However, as I'm currently developing AoC2022, I've commented it out.
 
-export @solve, print_all, solve_all, download_all, download_data
+    # args = [:(@solve IOBuffer($(Symbol("Day$(day)")).TEST_INPUT) $day) for day in SOLVED_DAYS]
+    # eval(:(@precompile_all_calls $(Expr(:block, args...))))
+end
+
+export @solve, load_all, print_all, solve_all, download_all, download_data
 
 end # module AoC2022
