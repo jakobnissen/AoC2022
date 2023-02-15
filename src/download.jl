@@ -1,7 +1,6 @@
 module Download
 
 import ..Downloads
-import ..Dates
 import ..DATA_DIR
 
 function get_source(day::Int)
@@ -51,7 +50,6 @@ function download_data(days, cookie_path::AbstractString)
     download_data(days, load_session(cookie_path))
 end
 
-# TODO: Update to 25 when this December is over
 """
     download_all(cookie_path::AbstractString)
 
@@ -65,10 +63,6 @@ julia> download_all("cookie.txt")
 [...]
 ```
 """
-function download_all(cookie_path::AbstractString)
-    today = Dates.today()
-    last_day = today < Dates.Date(2022, 12, 25) ? Dates.day(today) : 25
-    download_data(1:last_day, cookie_path)
-end
+download_all(cookie_path::AbstractString) = download_data(1:25, cookie_path)
 
 end # module

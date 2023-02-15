@@ -14,7 +14,6 @@ function RuckSack(v::AbstractVector{<:Integer})
     end
 
     iseven(length(v)) || error("Number of elements not divisible by 2")
-    first = last = UInt64(0)
     all(v) do num
         (num in UInt8('A'):UInt8('Z')) | (num in UInt8('a'):UInt8('z'))
     end || error("Rucksack does not only contain a-zA-Z")
