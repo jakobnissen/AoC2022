@@ -1,6 +1,6 @@
 using Documenter, AoC2022
 
-DocMeta.setdocmeta!(AoC2022, :DocTestSetup, :(using AoC2022); recursive=true)
+DocMeta.setdocmeta!(AoC2022, :DocTestSetup, :(using AoC2022); recursive = true)
 
 makedocs(
     format = Documenter.HTML(),
@@ -9,7 +9,7 @@ makedocs(
         "Home" => "index.md"
         "Notes" => "notes.md"
     ],
-    authors = "Jakob Nybo Nissen"
+    authors = "Jakob Nybo Nissen",
 )
 
 deploydocs(repo = "github.com/jakobnissen/AoC2022.git")

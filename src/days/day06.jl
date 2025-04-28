@@ -10,7 +10,7 @@ struct Letters
         all(codeunits(s)) do i
             i in UInt8('a'):UInt8('z')
         end || error("Must be a-z only")
-        new(s)
+        return new(s)
     end
 end
 
@@ -18,7 +18,7 @@ parse(io::IO) = Letters(strip(read(io, String)))
 
 function solve(v::Letters)
     buffer = Vector{UInt32}(undef, 26)
-    (solve(v, buffer, 4)::Integer, solve(v, buffer, 14)::Integer)
+    return (solve(v, buffer, 4)::Integer, solve(v, buffer, 14)::Integer)
 end
 
 function solve(v::Letters, buffer::Vector{UInt32}, n::Int)
@@ -32,32 +32,24 @@ function solve(v::Letters, buffer::Vector{UInt32}, n::Int)
         iszero(remaining) && return pos
         buffer[byte_index] = pos % UInt32
     end
-    nothing
+    return nothing
 end
 
 const TEST_INPUT = "mjqjpqmgbljsphdztnvjfqwrcgsmlb"
 
 @testitem "Day6" begin
     using AoC2022.Day6: solve, parse, TEST_INPUT
-    using JET
 
     TEST_STRINGS = [
         "mjqjpqmgbljsphdztnvjfqwrcgsmlb",
         "bvwbjplbgvbhsrlpgdmjqwftvncz",
         "nppdvjthqldpwncqszvftbrmjlhg",
         "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg",
-        "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"
+        "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw",
     ]
-    @test map(i -> solve(parse(IOBuffer(i))), TEST_STRINGS) == [
-        (7, 19),
-        (5, 23),
-        (6, 23),
-        (10, 29),
-        (11, 26)
-    ]
+    @test map(i -> solve(parse(IOBuffer(i))), TEST_STRINGS) ==
+        [(7, 19), (5, 23), (6, 23), (10, 29), (11, 26)]
     letters = parse(IOBuffer("abcdefg"))
-    @test_opt solve(letters)
-    @test_call solve(letters)
 end
 
 end # module

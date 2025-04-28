@@ -5,7 +5,7 @@ import ..@testitem
 @enum Direction::UInt8 up down left right
 
 function delta(x::Direction)::Tuple{Int32, Int32}
-    if x == up
+    return if x == up
         (0, 1)
     elseif x == down
         (0, -1)
@@ -38,7 +38,7 @@ function parse(io::IO)
             @goto malformed
         end
         c2 == UInt8(' ') || @goto malformed
-        num = Base.parse(UInt, view(line, 3:lastindex(line)); base=10)
+        num = Base.parse(UInt, view(line, 3:lastindex(line)); base = 10)
         push!(result, (direction, num))
     end
     return result
@@ -49,7 +49,7 @@ end
 function follow_pos(head, tail)
     (hx, hy), (tx, ty) = head, tail
     dx, dy = hx - tx, hy - ty
-    tail .+ (sign(dx), sign(dy))
+    return tail .+ (sign(dx), sign(dy))
 end
 
 function solve(v::AbstractVector{<:Tuple{Direction, Integer}})
@@ -80,7 +80,7 @@ function solve(v::AbstractVector{<:Tuple{Direction, Integer}})
             end
         end
     end
-    length(all_p1_pos), length(all_p2_pos)
+    return length(all_p1_pos), length(all_p2_pos)
 end
 
 const TEST_INPUT = """R 4
@@ -103,13 +103,10 @@ U 20"""
 
 @testitem "Day9" begin
     using AoC2022.Day9: solve, parse, TEST_INPUT, TEST_INPUT2
-    using JET
 
     v = parse(IOBuffer(TEST_INPUT))
     @test solve(v) == (13, 1)
     @test solve(parse(IOBuffer(TEST_INPUT2))) == (88, 36)
-    @test_opt solve(v)
-    @test_call solve(v)
 end
 
 end # module

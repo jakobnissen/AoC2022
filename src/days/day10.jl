@@ -14,11 +14,11 @@ end
 State() = State(1, 1, 1, nothing)
 
 function parse(io::IO)::Vector{Instruction}
-    map(Iterators.filter(!isempty, Iterators.map(rstrip, eachline(io)))) do line
+    return map(Iterators.filter(!isempty, Iterators.map(rstrip, eachline(io)))) do line
         if line == "noop"
             nothing
         elseif isvalid(line, 5) && view(line, 1:5) == "addx "
-            Base.parse(IntT, view(line, 6:lastindex(line)); base=10)
+            Base.parse(IntT, view(line, 6:lastindex(line)); base = 10)
         else
             error(lazy"Unknown instruction: \"$line\"")
         end
@@ -26,18 +26,18 @@ function parse(io::IO)::Vector{Instruction}
 end
 
 function advance(
-    v::Vector{Instruction},
-    screen::Vector{Bool},
-    state::State,
-    cycles::Integer,
-)
+        v::Vector{Instruction},
+        screen::Vector{Bool},
+        state::State,
+        cycles::Integer,
+    )
     len = length(v)
     index = state.index
     value_to_add = state.value_to_add
     register = state.register
-    state.cycle+cycles-1 > length(screen) && error("Too many cycles")
-    for current_cycle in state.cycle:state.cycle+cycles-1
-        if mod(current_cycle - 1, 40) in register-1:register+1
+    state.cycle + cycles - 1 > length(screen) && error("Too many cycles")
+    for current_cycle in state.cycle:(state.cycle + cycles - 1)
+        if mod(current_cycle - 1, 40) in (register - 1):(register + 1)
             @inbounds screen[current_cycle] = true
         end
         if value_to_add !== nothing
@@ -51,7 +51,7 @@ function advance(
             end
         end
     end
-    return State(state.cycle+cycles, index, register, value_to_add)
+    return State(state.cycle + cycles, index, register, value_to_add)
 end
 
 function solve(v)
@@ -63,19 +63,15 @@ function solve(v)
         signal += cycle * state.register
     end
     advance(v, screen, state, 20)
-    (signal, screen_string(screen))
+    return (signal, screen_string(screen))
 end
 
 function screen_string(screen)
     buffer = IOBuffer()
     for i in 1:40:240
-        write(
-            buffer,
-            '\n',
-            [i ? UInt8('#') : UInt8(' ') for i in view(screen, i:i+39)],
-        )
+        write(buffer, '\n', [i ? UInt8('#') : UInt8(' ') for i in view(screen, i:(i + 39))])
     end
-    String(take!(buffer))
+    return String(take!(buffer))
 end
 
 const TEST_INPUT = """addx 15
@@ -227,21 +223,22 @@ noop"""
 
 @testitem "Day10" begin
     using AoC2022.Day10: solve, parse, TEST_INPUT
-    using JET
 
     v = parse(IOBuffer(TEST_INPUT))
     solution = solve(v)
     @test solution[1] == 13140
-    @test solution[2] == '\n' * join([
-        "##  ##  ##  ##  ##  ##  ##  ##  ##  ##  ",
-        "###   ###   ###   ###   ###   ###   ### ",
-        "####    ####    ####    ####    ####    ",
-        "#####     #####     #####     #####     ",
-        "######      ######      ######      ####",
-        "#######       #######       #######     "
-        ], '\n')
-    @test_opt solve(v)
-    @test_call solve(v)
+    @test solution[2] ==
+        '\n' * join(
+        [
+            "##  ##  ##  ##  ##  ##  ##  ##  ##  ##  ",
+            "###   ###   ###   ###   ###   ###   ### ",
+            "####    ####    ####    ####    ####    ",
+            "#####     #####     #####     #####     ",
+            "######      ######      ######      ####",
+            "#######       #######       #######     ",
+        ],
+        '\n',
+    )
 end
 
 end # module

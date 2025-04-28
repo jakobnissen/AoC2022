@@ -3,7 +3,7 @@ module AoC2022
 using TestItems: @testitem
 using Printf: @sprintf
 using Downloads: Downloads
-using SnoopPrecompile: @precompile_all_calls
+using PrecompileTools: @compile_workload
 
 const SOLVED_DAYS = 1:12
 const DATA_DIR = joinpath(dirname(@__DIR__), "data")
@@ -17,8 +17,9 @@ import .Download: download_data, download_all
 
 let
     # This block expands to precompilation statement for all implemented days.
-    args = [:(@solve IOBuffer($(Symbol("Day$(day)")).TEST_INPUT) $day) for day in SOLVED_DAYS]
-    eval(:(@precompile_all_calls $(Expr(:block, args...))))
+    args =
+        [:(@solve IOBuffer($(Symbol("Day$(day)")).TEST_INPUT) $day) for day in SOLVED_DAYS]
+    eval(:(@compile_workload $(Expr(:block, args...))))
 end
 
 export @solve, load_all, print_all, solve_all, download_all, download_data

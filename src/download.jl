@@ -5,7 +5,7 @@ import ..DATA_DIR
 
 function get_source(day::Int)
     day in 1:25 || error()
-    "https://adventofcode.com/2022/day/" * string(day) * "/input"
+    return "https://adventofcode.com/2022/day/" * string(day) * "/input"
 end
 
 struct Session
@@ -13,7 +13,7 @@ struct Session
 end
 
 function Session(s::Union{String, SubString{String}})
-    Session(hex2bytes(chopprefix(s, "session=")))
+    return Session(hex2bytes(chopprefix(s, "session=")))
 end
 
 load_session(path::AbstractString) = Session(strip(read(path, String)))
@@ -29,10 +29,11 @@ function download_data(day_iter, session::Session)
         if isfile(target)
             println("Skipping existing file \"$target\"")
         else
-            Downloads.download(get_source(day), target; headers=headers, timeout=10)
+            Downloads.download(get_source(day), target; headers = headers, timeout = 10)
             println("Downloaded file to \"$target\"")
         end
     end
+    return
 end
 
 """
@@ -47,7 +48,7 @@ julia> download_data(1:3, "cookie.txt")
 ```
 """
 function download_data(days, cookie_path::AbstractString)
-    download_data(days, load_session(cookie_path))
+    return download_data(days, load_session(cookie_path))
 end
 
 """

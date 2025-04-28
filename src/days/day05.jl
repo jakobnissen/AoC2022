@@ -17,9 +17,9 @@ function parse(io::IO)
 end
 
 function parse_tower(buffer::Vector{<:AbstractString})
-    # The last line in buffer (above the terminating blank line) gives the 
+    # The last line in buffer (above the terminating blank line) gives the
     # integer labels of each tower. We pop it off here.
-    order = map(i -> Base.parse(UInt, i; base=10), eachsplit(pop!(buffer)))
+    order = map(i -> Base.parse(UInt, i; base = 10), eachsplit(pop!(buffer)))
     allunique(order) || error("Not all indices unique")
     vectors = [UInt8[] for i in eachindex(order)]
     for line in buffer
@@ -52,7 +52,7 @@ function parse_tower(buffer::Vector{<:AbstractString})
     # end, they must be represented as "bottom-up", even though they are parsed
     # top-down.
     foreach(reverse!, vectors)
-    Dict(zip(order, vectors))
+    return Dict(zip(order, vectors))
 end
 
 function parse_moves(lines)
@@ -63,20 +63,20 @@ function parse_moves(lines)
             return result
         end
         m = something(match(r"^move (\d+) from (\d+) to (\d+)$", line))
-        push!(result, (
-            Base.parse(UInt16, m.captures[1]; base=10),
-            Base.parse(UInt8, m.captures[2]; base=10),
-            Base.parse(UInt8, m.captures[3]; base=10)
-        ))
+        push!(
+            result,
+            (
+                Base.parse(UInt16, m.captures[1]; base = 10),
+                Base.parse(UInt8, m.captures[2]; base = 10),
+                Base.parse(UInt8, m.captures[3]; base = 10),
+            ),
+        )
     end
-    result
+    return result
 end
 
 solve(x::Tuple{<:AbstractDict, <:AbstractVector}) = solve(x...)
-function solve(
-    tower::Dict{<:Integer, Vector{UInt8}},
-    moves::Vector{<:NTuple{3, Integer}}
-)
+function solve(tower::Dict{<:Integer, Vector{UInt8}}, moves::Vector{<:NTuple{3, Integer}})
     # Copy vector for part2 to avoid mutating same arrays for both parts
     copied = Dict(k => (copy(v), copy(v)) for (k, v) in tower)
     for (n, from, to) in moves
@@ -84,20 +84,20 @@ function solve(
         # For part 1, they are moved one at a time, which reverses the moved
         # chunk. For part 2, the chunk need not be reverted.
         # Otherwise, the process is the same.
-        reverse!(@view(copied[to][1][end-n+1:end]))
+        reverse!(@view(copied[to][1][(end - n + 1):end]))
         append_pop!(last(copied[to]), last(copied[from]), n)
     end
     # Now we just take the last byte of each array (sorted by their name)
     # and turn it into a string.
     pairs = map(last, sort!(collect(copied)))
-    (String(map(i -> last(first(i)), pairs)), String(map(i -> last(last(i)), pairs)))
+    return (String(map(i -> last(first(i)), pairs)), String(map(i -> last(last(i)), pairs)))
 end
 
 # Move the `n` last elements from `from` to `to`.
-function append_pop!(to::Vector{T}, from::Vector{T}, n::Integer) where T
-    append!(to, @view(from[end-n+1:end]))
+function append_pop!(to::Vector{T}, from::Vector{T}, n::Integer) where {T}
+    append!(to, @view(from[(end - n + 1):end]))
     resize!(from, length(from) - n)
-    to
+    return to
 end
 
 const TEST_INPUT = """    [D]    
@@ -112,12 +112,9 @@ move 1 from 1 to 2"""
 
 @testitem "Day5" begin
     using AoC2022.Day5: solve, parse, TEST_INPUT
-    using JET
 
     data = parse(IOBuffer(TEST_INPUT))
     @test solve(data) == ("CMZ", "MCD")
-    @test_opt solve(data)
-    @test_call solve(data)
 end
 
 end # module

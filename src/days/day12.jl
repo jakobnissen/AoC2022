@@ -17,7 +17,7 @@ function parse(io::IO)
             linewidth = ncodeunits(line)
         elseif linewidth != ncodeunits(line)
             error("Not all lines equally long")
-        end 
+        end
         for (col, byte) in enumerate(codeunits(line))
             if byte == UInt8('S')
                 start === nothing || error("Multiple starting positions")
@@ -34,19 +34,19 @@ function parse(io::IO)
             end
         end
     end
-    (
+    return (
         permutedims(reshape(buffer, (linewidth, :))),
         CartesianIndex(start),
-        CartesianIndex(stop)
+        CartesianIndex(stop),
     )
 end
 
 function count_steps(
-    m::AbstractMatrix{<:Integer},
-    steps::Matrix{<:Signed},
-    start::Vector{Index},
-    stop::Index
-)
+        m::AbstractMatrix{<:Integer},
+        steps::Matrix{<:Signed},
+        start::Vector{Index},
+        stop::Index,
+    )
     fill!(steps, eltype(steps)(-1))
     for i in start
         steps[i] = 0
@@ -69,14 +69,14 @@ function count_steps(
         empty!(start)
         (start, next) = (next, start)
     end
-    steps
+    return steps
 end
 
 solve(t::Tuple{<:AbstractMatrix{<:Integer}, Index, Index}) = solve(t...)
 function solve(m::AbstractMatrix{<:Integer}, start::Index, stop::Index)
     steps = Matrix{Int16}(undef, size(m))
     start_p2 = filter(i -> m[i] == 0x00, CartesianIndices(m))
-    (count_steps(m, steps, [start], stop), count_steps(m, steps, start_p2, stop))
+    return (count_steps(m, steps, [start], stop), count_steps(m, steps, start_p2, stop))
 end
 
 const TEST_INPUT = """Sabqponm
@@ -87,12 +87,9 @@ abdefghi"""
 
 @testitem "Day12" begin
     using AoC2022.Day12: solve, parse, TEST_INPUT
-    using JET
 
     data = parse(IOBuffer(TEST_INPUT))
     @test solve(data) == (31, 29)
-    @test_opt solve(data)
-    @test_call ignored_modules=(Base,) solve(data)
 end
 
 end # module

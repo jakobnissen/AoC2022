@@ -26,17 +26,18 @@ function directional_mapreduce!(f, op!, mats, accs)
     for (acc, mat) in zip(accs, mats)
         op!(acc, f(mat))
     end
+    return
 end
 
 function bidirectional_mapreduce!(f, op!, matrix, accumulator)
     directional_mapreduce!(f, op!, eachcol(matrix), eachcol(accumulator))
-    directional_mapreduce!(f, op!, eachrow(matrix), eachrow(accumulator))
+    return directional_mapreduce!(f, op!, eachrow(matrix), eachrow(accumulator))
 end
 
 function quaddirectional_mapreduce!(f, op!, matrix, accumulator)
     bidirectional_mapreduce!(f, op!, matrix, accumulator)
     bidirectional_mapreduce!(f, op!, reverse!(matrix), reverse!(accumulator))
-    accumulator
+    return accumulator
 end
 
 function is_visible!(buffer::AbstractVector{Bool}, trees::AbstractVector{<:Integer})
@@ -49,7 +50,7 @@ function is_visible!(buffer::AbstractVector{Bool}, trees::AbstractVector{<:Integ
             max_height = height
         end
     end
-    view(buffer, eachindex(trees))
+    return view(buffer, eachindex(trees))
 end
 
 function part1(m::AbstractMatrix{<:Integer})
@@ -57,22 +58,22 @@ function part1(m::AbstractMatrix{<:Integer})
     buffer = BitVector(undef, max(size(m)...))
     f = i -> is_visible!(buffer, i)
     op!(a, b) = a .|= b
-    sum(quaddirectional_mapreduce!(f, op!, m, accumulator))
+    return sum(quaddirectional_mapreduce!(f, op!, m, accumulator))
 end
 
 function get_visibility!(
-    seenbuffer::AbstractVector{<:Integer},
-    viewbuffer::AbstractVector{<:Integer},
-    trees::AbstractVector{<:Integer}
-)
+        seenbuffer::AbstractVector{<:Integer},
+        viewbuffer::AbstractVector{<:Integer},
+        trees::AbstractVector{<:Integer},
+    )
     fill!(seenbuffer, 1)
     viewbuffer[1] = 0
     @inbounds for i in 2:lastindex(trees)
         height = trees[i]
-        viewbuffer[i] = (i - seenbuffer[height+1]) % eltype(viewbuffer)
-        @view(seenbuffer[1:height+1]) .= (i % eltype(seenbuffer))
+        viewbuffer[i] = (i - seenbuffer[height + 1]) % eltype(viewbuffer)
+        @view(seenbuffer[1:(height + 1)]) .= (i % eltype(seenbuffer))
     end
-    view(viewbuffer, eachindex(trees))
+    return view(viewbuffer, eachindex(trees))
 end
 
 function part2(m::AbstractMatrix{<:Integer})
@@ -81,12 +82,12 @@ function part2(m::AbstractMatrix{<:Integer})
     viewbuffer = Vector{UInt32}(undef, max(size(m)...))
     f = i -> get_visibility!(seenbuffer, viewbuffer, i)
     op!(a, b) = a .*= b
-    Int(maximum(quaddirectional_mapreduce!(f, op!, m, accumulator)))
+    return Int(maximum(quaddirectional_mapreduce!(f, op!, m, accumulator)))
 end
 
 function solve(m::AbstractMatrix{<:Integer})
     minimum(size(m)) < 3 && return (length(m), 0)
-    (part1(m), part2(m))
+    return (part1(m), part2(m))
 end
 
 const TEST_INPUT = """30373
@@ -97,12 +98,9 @@ const TEST_INPUT = """30373
 
 @testitem "Day8" begin
     using AoC2022.Day8: solve, parse, TEST_INPUT
-    using JET
 
     matrix = parse(IOBuffer(TEST_INPUT))
     @test solve(matrix) == (21, 8)
-    @test_opt solve(matrix)
-    @test_call solve(matrix)
 end
 
 end

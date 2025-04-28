@@ -1,15 +1,15 @@
 const BufferType = Vector{NamedTuple{(:result, :time, :day), Tuple{Any, Float64, Int}}}
 
 macro time(ex)
-    quote
+    return quote
         t1 = time_ns()
         val = $(esc(ex))
-        ((time_ns() - t1) / 1e9, val)
+        ((time_ns() - t1) / 1.0e9, val)
     end
 end
 
 macro solve(io, day)
-    :($(Symbol("Day$(day)")).solve($(Symbol("Day$(day)")).parse($(esc(io)))))
+    return :($(Symbol("Day$(day)")).solve($(Symbol("Day$(day)")).parse($(esc(io)))))
 end
 
 """
@@ -25,7 +25,7 @@ julia> @solve 1
 ```
 """
 macro solve(day)
-    quote
+    return quote
         open(joinpath(DATA_DIR, $("day" * lpad(day, 2, '0') * ".txt"))) do io
             @solve io $day
         end
@@ -35,12 +35,11 @@ end
 let
     args = Any[
         quote
-            let
-                (time, result) = @time @solve $day
-                push!(buffer, (;result, time, day=$day))
+                let
+                    (time, result) = @time @solve $day
+                    push!(buffer, (; result, time, day = $day))
             end
-        end
-        for day in SOLVED_DAYS
+            end for day in SOLVED_DAYS
     ]
     solve_all_block = Expr(:block, args...)
 
@@ -48,34 +47,33 @@ let
         buffer = BufferType()
         # This expands to `@push_day 1` etc for all solved days
         (time, _) = @time $solve_all_block
-        (time, sort!(buffer, by=i -> i.day))
+        return (time, sort!(buffer, by = i -> i.day))
     end
 
     @doc """
-    solve_all([input])::Vector{@NamedTuple result::Any, time::Float64, day::Int}
+        solve_all([input])::Vector{@NamedTuple result::Any, time::Float64, day::Int}
 
-Load and solve all puzzles, returning `(total_time::Float64, solutions)`.
-If `input` is passed, it must be the output of `load_all`. This allows `solve_all`
-to work from data in memory.
-If not passed, `solve_all` will read the data from disk.
+    Load and solve all puzzles, returning `(total_time::Float64, solutions)`.
+    If `input` is passed, it must be the output of `load_all`. This allows `solve_all`
+    to work from data in memory.
+    If not passed, `solve_all` will read the data from disk.
 
-`solutions` is a vector containing `NamedTuples` with the following fields:
-    * `.result` is a Tuple{Any, Any} if and only if both parts of the day is
-      returned
-    * `.time` is the approximate elapsed time in seconds to solve the day's puzzle(s)
-    * `.day` is the day
-"""
+    `solutions` is a vector containing `NamedTuples` with the following fields:
+        * `.result` is a Tuple{Any, Any} if and only if both parts of the day is
+          returned
+        * `.time` is the approximate elapsed time in seconds to solve the day's puzzle(s)
+        * `.day` is the day
+    """
     solve_all
 
     args = Any[
         quote
-            let
-                io = IOBuffer(data[$day])
-                (time, result) = @time @solve io $day
-                push!(buffer, (;result, time, day=$day))
+                let
+                    io = IOBuffer(data[$day])
+                    (time, result) = @time @solve io $day
+                    push!(buffer, (; result, time, day = $day))
             end
-        end
-        for day in SOLVED_DAYS
+            end for day in SOLVED_DAYS
     ]
     solve_all_block = Expr(:block, args...)
 
@@ -83,12 +81,12 @@ If not passed, `solve_all` will read the data from disk.
         buffer = BufferType()
         # This expands to `@push_day 1` etc for all solved days
         (time, _) = @time $solve_all_block
-        (time, sort!(buffer, by=i -> i.day))
+        return (time, sort!(buffer, by = i -> i.day))
     end
 end
 
 function load_all()
-    map(SOLVED_DAYS) do day
+    return map(SOLVED_DAYS) do day
         open(read, joinpath(DATA_DIR, "day$(lpad(day, 2, '0')).txt"))
     end
 end
@@ -102,7 +100,7 @@ print_all(args...) = print_solution(solve_all(args...)...)
 
 function print_solution(total_time::Real, buffer::BufferType)
     io = IOBuffer()
-    for (;result, time, day) in buffer
+    for (; result, time, day) in buffer
         # Some days I might only have solved part 1.
         (part1, part2) = if result isa Tuple{Any, Any}
             result
@@ -115,5 +113,5 @@ function print_solution(total_time::Real, buffer::BufferType)
         println(io)
     end
     print(io, "Total time: ", @sprintf("%.6f", total_time), " seconds")
-    print(String(take!(io)))
+    return print(String(take!(io)))
 end
